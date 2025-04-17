@@ -1,0 +1,5 @@
+export const BookTypes = {
+    Angel: 'angel',
+    Demon: 'demon',
+    Neutral: 'neutral'
+}
