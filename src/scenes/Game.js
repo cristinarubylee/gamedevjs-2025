@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import Book from '../objects/Book';
+import Shelf from '../objects/Shelf';
 import { BookTypes } from '../consts/BookTypes';
 import { SceneKeys } from '../consts/SceneKeys';
 
@@ -13,6 +14,16 @@ export default class Game extends Phaser.Scene {
   preload() {}
 
   create() {
+    // Initialize camera layers
+    this.worldLayer = this.add.container();
+    this.uiLayer = this.add.container();
+
+    const bookData = [
+      { title: 'Book of Light', type: 'angel', color: 0xF2E6C9 },
+      { title: 'Grimoire', type: 'demon', color: 0x5C1A1B },
+      { title: 'Chronicles', type: 'neutral', color: 0x7E8662 },
+    ];
+    
     this.matter.add.pointerConstraint({
       length: 0,
       stiffness: 0.2
@@ -41,9 +52,20 @@ export default class Game extends Phaser.Scene {
     const ground = this.add.rectangle(400, 590, 800, 60, 0x444444);
     this.matter.add.gameObject(ground, { isStatic: true });
     this.matter.world.setBounds(0, -400, 800, 1000);
+    this.worldLayer.add(ground);
 
     // Make camera bounds beyond current screen
     this.cameras.main.setBounds(0, -400, 800, 1000);
+
+    // Ignore UI for main camera
+    this.cameras.main.ignore(this.uiLayer);
+
+    // Ignore world for UI camera
+    this.uiCamera = this.cameras.add(0, 0, 800, 600);
+    this.uiCamera.ignore(this.worldLayer);
+
+    
+    this.shelf = new Shelf(this, this.uiLayer, 'book');
 
     // Create book on click
     this.input.on('pointerdown', this.handlePointerDown, this);
@@ -79,6 +101,7 @@ export default class Game extends Phaser.Scene {
 
     const book = new Book(this, x, y, 'book', book_type);
     book.rotate(90);
+    this.worldLayer.add(book);
   
     this.currentlyHeldBook = book;
 
@@ -100,7 +123,9 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.on('drag', (pointer, obj, x, y) => {
-      obj.setPosition(pointer.worldX, pointer.worldY);
+      if (x > 0 && x < 800 && y > 0 && y < 540){
+        obj.setPosition(pointer.worldX, pointer.worldY);
+      }
     });
 
     this.input.on('dragend', (pointer, obj) => {
