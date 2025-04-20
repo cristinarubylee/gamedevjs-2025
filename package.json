@@ -11,7 +11,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "phaser": "^3.88.2"
+    "phaser": "^3.88.2",
+    "phaser3-rex-plugins": "^1.80.15"
   },
   "devDependencies": {
     "vite": "^6.2.6"

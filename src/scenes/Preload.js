@@ -11,6 +11,10 @@ export default class Preload extends Phaser.Scene
 	preload()
 	{
 		this.load.image('book', '/assets/book.png');
+		this.load.image('book_blur', '/assets/book_blur.png');
+		this.load.image('background', '/assets/background.png');
+		this.load.image('foreground', '/assets/foreground.png');
+		this.load.image('shelf', '/assets/shelves.png');
 	}
 
 	create()
