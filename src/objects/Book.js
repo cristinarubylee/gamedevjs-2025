@@ -22,10 +22,10 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         this.setFriction(1);
         this.setInteractive();
 
-        // this.sensor = this.scene.matter.add.circle(x, y, 50, {
-        //     isSensor: true,
-        //     isStatic: true
-        // })
+        this.sensor = this.scene.matter.add.circle(x, y, 50, {
+            isSensor: true,
+            isStatic: true
+        })
         // this.glow = this.createGlow(this.x, this.y, 60, 200, color)
 
         this.shadow = this.scene.add.rexQuadImage(x, y, blur)

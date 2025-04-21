@@ -12,6 +12,7 @@ export default class Game extends Phaser.Scene {
 
     this.books = [];
     this.currentlyHeldBook = null;
+    this.picked = null;
   }
 
   preload() {}
@@ -22,7 +23,7 @@ export default class Game extends Phaser.Scene {
     this.setupKeyboard();
     this.setupDragEvents();
 
-    this.cameras.main.fadeIn(2000, 0, 0, 0);
+    this.cameras.main.fadeIn(500, 0, 0, 0);
   }
 
   setupPhysicsAndLayers() {
@@ -82,6 +83,8 @@ export default class Game extends Phaser.Scene {
     this.keySpace.on('down', this.clearAllBooks, this);
 
     this.keyP.on('down', () => {
+      const shelfScene = this.scene.get(SceneKeys.Shelf);
+      shelfScene.picked = this.picked;
       this.scene.switch(SceneKeys.Shelf);
     });
   }
@@ -106,20 +109,26 @@ export default class Game extends Phaser.Scene {
   }
 
   handlePointerDown(pointer) {
+    if (this.picked == null){
+      return;
+    }
+
     const x = pointer.worldX;
     const y = pointer.worldY;
 
-    const bodies = this.matter.intersectPoint(x, y);
-    if (bodies.length > 0) return;
+    // const bodies = this.matter.intersectPoint(x, y);
+    // // if (bodies.length > 0) return;
 
-    const types = Object.values(BookTypes);
-    const book_type = Phaser.Math.RND.pick(types);
+    // const types = Object.values(BookTypes);
+    // const book_type = Phaser.Math.RND.pick(types);
 
-    const book = new Book(this, x, y, 'book', 'book_blur', book_type);
+    const book = new Book(this, x, y, 'book', 'book_blur', this.picked);
 
     this.currentlyHeldBook = book;
     this.input.setDraggable(book);
     this.books.push(book);
+
+    this.picked = null;
   }
 
   handlePointerUp() {

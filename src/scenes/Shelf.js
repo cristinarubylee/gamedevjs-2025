@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import Book from '../objects/Book';
+import Icon from '../objects/Icon';
 import { BookTypes } from '../consts/BookTypes';
 import { SceneKeys } from '../consts/SceneKeys';
 
@@ -10,19 +11,19 @@ export default class Shelf extends Phaser.Scene {
     this.worldHeight = 1000;
     this.groundHeight = 100;
 
-    // this.books = [];
-    // this.currentlyHeldBook = null;
+    this.bottomLeft = { x: 160, y: 745 };
+
+    this.picked = null;
   }
 
   preload() {}
 
   create() {
     this.setupPhysicsAndLayers();
+    this.setupIcons();
     this.setupInput();
     this.setupKeyboard();
     this.setupDragEvents();
-
-    this.cameras.main.fadeIn(2000, 0, 0, 0);
   }
 
   setupPhysicsAndLayers() {
@@ -34,15 +35,31 @@ export default class Shelf extends Phaser.Scene {
     this.matter.world.setBounds(0, 0, width, this.worldHeight);
     this.cameras.main.setBounds(0, 0, width, this.worldHeight);
     this.cameras.main.scrollY = this.worldHeight - height; // Scroll to the bottom
-    
-    // const ground = this.add.rectangle(width/2, this.worldHeight - this.groundHeight/2, width, this.groundHeight, 0x444444, 0); // Origin is at center here
-    // this.matter.add.gameObject(ground, { isStatic: true });
 
     this.layerBack = this.add.image(0, 0, 'shelf').setOrigin(0); // Change origin to be at top left corner instead of at center
     this.layerBack.displayWidth = width;
     this.layerBack.displayHeight = this.worldHeight;
   }
 
+  setupIcons() {
+    this.picked = SceneKeys.Game.picked;
+    this.total = 20;
+    const types = Object.values(BookTypes);
+
+    let i = 0;
+    while (i < this.total){
+      const book_type = Phaser.Math.RND.pick(types);
+      const icon = new Icon(this, this.bottomLeft.x + 15 * i, this.bottomLeft.y, 'book', book_type);
+
+      icon.on('pointerdown', () => {
+        if (this.picked == null) {
+          this.picked = book_type;
+          icon.destroy();
+        }
+      })
+      i++;
+    }
+  }
 
   setupInput() {
     // Create book on click
@@ -73,6 +90,8 @@ export default class Shelf extends Phaser.Scene {
     // });
 
     this.keyP.on('down', () => {
+        const gameScene = this.scene.get(SceneKeys.Game);
+        gameScene.picked = this.picked;
         this.scene.switch(SceneKeys.Game);
       });
 
@@ -99,21 +118,9 @@ export default class Shelf extends Phaser.Scene {
   }
 
   handlePointerDown(pointer) {
-    // const x = pointer.worldX;
-    // const y = pointer.worldY;
+    const x = pointer.worldX;
+    const y = pointer.worldY;
 
-    // const bodies = this.matter.intersectPoint(x, y);
-    // if (bodies.length > 0) return;
-
-    // const types = Object.values(BookTypes);
-    // const book_type = Phaser.Math.RND.pick(types);
-
-    // const book = new Book(this, x, y, 'book', book_type);
-    // book.rotate(90);
-
-    // this.currentlyHeldBook = book;
-    // this.input.setDraggable(book);
-    // this.books.push(book);
   }
 
   handlePointerUp() {
