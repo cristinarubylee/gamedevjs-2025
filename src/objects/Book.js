@@ -22,35 +22,15 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         this.setFriction(1);
         this.setInteractive();
 
-        this.sensor = this.scene.matter.add.circle(x, y, 50, {
-            isSensor: true,
-            isStatic: true
-        })
+        // this.sensor = this.scene.matter.add.circle(x, y, 50, {
+        //     isSensor: true,
+        //     isStatic: true
+        // })
         // this.glow = this.createGlow(this.x, this.y, 60, 200, color)
 
-        this.shadow = this.scene.add.rexQuadImage(x, y, blur)
-            .setTint(color)
-            .setAlpha(0.1)
-            .setScale(0.6)
+        this.sensor = this.createSensor(this.x, this.y, book_type);
 
-        const scale = this.scale;
-        const width = this.width * scale;
-        const height = this.height * scale;
-
-        const baseX = x - width/2;
-        const baseY = y + height/2;
-        const shadowHeight = 30;
-        const warp = 30;
-
-        // Top edge (aligned with object bottom)
-        this.shadow.topLeft.setPosition(baseX, baseY);
-        this.shadow.topRight.setPosition(baseX + width, baseY);
-
-        // Bottom edge (pushed down and warped for trapezoid effect on table)
-        this.shadow.bottomLeft.setPosition(baseX - warp, baseY + shadowHeight);
-        this.shadow.bottomRight.setPosition(baseX + width + warp, baseY + shadowHeight);
-
-        this.setDepth(10);
+        this.shadow = this.createShadow(this.x, this.y, color, blur);
     }
 
     rotate(degrees) {
@@ -70,7 +50,45 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         // }
     
         // return glow;
-      }
+    }
+
+    createSensor(x, y, book_type){
+        const sensor = this.scene.matter.add.rectangle(x, y, (this.width * this.scale + 30), (this.height * this.scale + 30), {
+            isSensor: true,
+        })
+
+        sensor.isSensorBook = true;
+        sensor.book_type = book_type;
+        sensor.exploded = false;
+        return sensor;
+    }
+
+    createShadow(x, y, color, blur){
+        const shadow = this.scene.add.rexQuadImage(x, y, blur)
+            .setTint(color)
+            .setAlpha(0.1)
+            .setScale(0.6)
+
+        const scale = this.scale;
+        const width = this.width * scale;
+        const height = this.height * scale;
+
+        const baseX = x - width/2;
+        const baseY = y + height/2;
+        const shadowHeight = 30;
+        const warp = 30;
+
+        // Top edge (aligned with object bottom)
+        shadow.topLeft.setPosition(baseX, baseY);
+        shadow.topRight.setPosition(baseX + width, baseY);
+
+        // Bottom edge (pushed down and warped for trapezoid effect on table)
+        shadow.bottomLeft.setPosition(baseX - warp, baseY + shadowHeight);
+        shadow.bottomRight.setPosition(baseX + width + warp, baseY + shadowHeight);
+
+        this.setDepth(10);
+        return shadow;
+    }
     
     updateGlow() {
         // if (this.glow) {
@@ -81,7 +99,16 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         //     this.scene.matter.body.setPosition(this.sensor, {x: this.x, y: this.y})
         //     this.sensor.rotation = this.rotation;
         // }
+    }
 
+    updateSensor(){
+        if (this.sensor) {
+            this.scene.matter.body.setPosition(this.sensor, {x: this.x, y: this.y});
+            this.scene.matter.body.setAngle(this.sensor, this.angle * Phaser.Math.DEG_TO_RAD);
+        }
+    }
+
+    updateShadow() {
         const tableY = 800;
         const maxShadowY = 850;
 
@@ -107,7 +134,7 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
 
         let tableHit = true;
         for (const hit of localHits) {
-            if (hit.body == this.body){
+            if (hit.body === this.body || hit.body.isSensor) {
                 continue;
             }
             const obj = hit.body.gameObject;
@@ -123,7 +150,7 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
 
         for (const hit of farHits) {
             const obj = hit.body.gameObject;
-            if (hit.body == this.body){
+            if (hit.body === this.body || hit.body.isSensor) {
                 continue;
             }
             if (obj && (obj.getData && !obj.getData('isTable'))) { // Assuming that every object has object data
@@ -147,14 +174,13 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         } else {
             this.shadow.setVisible(false);
         }
-        
     }
     
     destroy() {
-        // if (this.sensor){
-        //     this.scene.matter.world.remove(this.sensor);
-        //     this.sensor = null;
-        // }
+        if (this.sensor){
+            this.scene.matter.world.remove(this.sensor);
+            this.sensor = null;
+        }
         if (this.shadow) {
             this.shadow.destroy();
             this.shadow = null;

@@ -79,7 +79,7 @@ export default class Shelf extends Phaser.Scene {
     this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
 
-    this.keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+    this.keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
     // this.keyA.on('down', () => {
     //   if (this.currentlyHeldBook) this.currentlyHeldBook.rotate(15);
