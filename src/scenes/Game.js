@@ -23,10 +23,9 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.setupPhysicsAndLayers();
+    this.setupUI();
     this.setupInput();
     this.setupCollisions();
-
-    this.cameras.main.fadeIn(500, 0, 0, 0);
   }
 
   setupPhysicsAndLayers() {
@@ -53,6 +52,15 @@ export default class Game extends Phaser.Scene {
     this.layerFront.displayHeight = this.worldHeight;
   }
 
+  setupUI() {
+    this.backBtn = this.add.text(10, 10, '← Menu', {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setInteractive()
+    .setScrollFactor(0);
+  }
+  
   setupInput() {
     // Keybinds
     this.leftRotate = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -103,6 +111,11 @@ export default class Game extends Phaser.Scene {
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
       this.scene.switch(SceneKeys.Shelf);
+    });
+
+    // Back to level select
+    this.backBtn.on('pointerdown', () => {
+      this.scene.switch(SceneKeys.LevelSelect);
     });
   }
 

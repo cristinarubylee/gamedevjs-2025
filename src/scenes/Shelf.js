@@ -11,11 +11,12 @@ export default class Shelf extends Phaser.Scene {
     this.worldHeight = 1000;
     this.groundHeight = 100;
 
+    this.icons = [];
+
     // Constants to help organize the books on the shelf
     const vert_gap = 126;
     this.horizontal_gap = 500;
     this.book_gap = 20;
-    this.total_books = 30;
     
     // x value of the leftmost shelf wall
     this.left = 200;
@@ -32,12 +33,22 @@ export default class Shelf extends Phaser.Scene {
 
   preload() {}
 
+  init(data) {
+    this.total_books = data.total;
+    
+    this.picked = null;
+
+    const gameScene = this.scene.get(SceneKeys.Game);
+    gameScene.clearAllBooks();
+    this.scene.switch(SceneKeys.Game);
+    gameScene.cameras.main.fadeIn(500, 0, 0, 0);
+  }
+
   create() {
     this.setupPhysicsAndLayers();
     this.setupIcons();
+    this.setupUI();
     this.setupInput();
-    this.setupKeyboard();
-    this.setupDragEvents();
   }
 
   setupPhysicsAndLayers() {
@@ -53,6 +64,39 @@ export default class Shelf extends Phaser.Scene {
     this.layerBack = this.add.image(0, 0, 'shelf').setOrigin(0); // Change origin to be at top left corner instead of at center
     this.layerBack.displayWidth = width;
     this.layerBack.displayHeight = this.worldHeight;
+  }
+
+  setupUI() {
+    this.backBtn = this.add.text(10, 10, '← Menu', {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setInteractive()
+    .setScrollFactor(0);
+  }
+
+  setupInput() {
+    // Keybinds
+    this.switch = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    this.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+
+    // Allow scroll with mouse wheel
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+      this.cameras.main.scrollY += deltaY * 0.5;
+    });
+
+    // Switch scene
+    this.switch.on('down', () => {
+      const gameScene = this.scene.get(SceneKeys.Game);
+      gameScene.picked = this.picked;
+      this.scene.switch(SceneKeys.Game);
+    });
+
+    // Back to level select
+    this.backBtn.on('pointerdown', () => {
+      this.scene.switch(SceneKeys.LevelSelect);
+    });
   }
 
   setupIcons() {
@@ -108,85 +152,15 @@ export default class Shelf extends Phaser.Scene {
                 icon.destroy();
             }
         });
+      }
     }
-}
-
-
-  setupInput() {
-    // Create book on click
-    // this.input.on('pointerdown', this.handlePointerDown, this);
-    // this.input.on('pointerup', this.handlePointerUp, this);
-
-    // Allow scroll with mouse wheel
-    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
-      this.cameras.main.scrollY += deltaY * 0.5;
-    });
-  }
-
-  setupKeyboard() {
-    this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-    this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-    this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-
-    this.keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-
-    // this.keyA.on('down', () => {
-    //   if (this.currentlyHeldBook) this.currentlyHeldBook.rotate(15);
-    // });
-
-    // this.keyS.on('down', () => {
-    //   if (this.currentlyHeldBook) this.currentlyHeldBook.rotate(-15);
-    // });
-
-    this.keyP.on('down', () => {
-        const gameScene = this.scene.get(SceneKeys.Game);
-        gameScene.picked = this.picked;
-        this.scene.switch(SceneKeys.Game);
-      });
-
-    // this.keySpace.on('down', this.clearAllBooks, this);
-  }
-
-  setupDragEvents() {
-    // this.input.on('dragstart', (pointer, obj) => {
-    //   obj.setStatic(true);
-    //   this.currentlyHeldBook = obj;
-    // });
-
-    // this.input.on('drag', (pointer, obj, x, y) => {
-    //   obj.setPosition(pointer.worldX, pointer.worldY);
-    //   if (x > 0 && x < 800 && y > 0 && y < this.worldHeight - this.groundHeight) {
-    //     obj.setPosition(pointer.worldX, pointer.worldY);
-    //   }
-    // });
-
-    // this.input.on('dragend', (pointer, obj) => {
-    //   obj.setStatic(false);
-    //   this.currentlyHeldBook = null;
-    // });
-  }
-
-  handlePointerDown(pointer) {
-    const x = pointer.worldX;
-    const y = pointer.worldY;
-
-  }
-
-  handlePointerUp() {
-    // if (this.currentlyHeldBook) {
-    //   this.currentlyHeldBook = null;
-    // }
-  }
-
-
+  
   update() {
     const cam = this.cameras.main;
     const scrollSpeed = 5;
 
-    if (this.keyUp.isDown) cam.scrollY -= scrollSpeed;
-    if (this.keyDown.isDown) cam.scrollY += scrollSpeed;
+    if (this.up.isDown) cam.scrollY -= scrollSpeed;
+    if (this.down.isDown) cam.scrollY += scrollSpeed;
 
   }
 }
