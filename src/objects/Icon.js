@@ -5,27 +5,12 @@ export default class Icon extends Phaser.Physics.Matter.Image {
         super(scene.matter.world, x, y, sprite);
         this.scene.add.existing(this);
 
-        const colorMap = {
-            'angel': Phaser.Display.Color.HexStringToColor('#F2E6C9').color, // Cream
-            'demon': Phaser.Display.Color.HexStringToColor('#5C1A1B').color, // Red
-            'neutral': Phaser.Display.Color.HexStringToColor('#7E8662').color, // Green
-        }
+        this.book_type = book_type;
 
-        const color = colorMap[book_type] || Phaser.Display.Color.HexStringToColor('#FFFFFF').color;
-        this.setTint(color);
-
-        this.setScale(0.2);
         this.setStatic(true);
-        this.setRotation(Phaser.Math.DegToRad(90));
         // this.setRectangle(60, 300);
 
         this.setInteractive();
-
-        // this.sensor = this.scene.matter.add.circle(x, y, 50, {
-        //     isSensor: true,
-        //     isStatic: true
-        // })
-        // this.glow = this.createGlow(this.x, this.y, 60, 200, color)
     }
 
     createGlow(x, y, width, height, color) {
