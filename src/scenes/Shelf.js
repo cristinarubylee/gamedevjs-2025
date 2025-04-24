@@ -14,7 +14,6 @@ export default class Shelf extends Phaser.Scene {
     this.icons = [];
 
     // Constants to help organize the books on the shelf
-    const vert_gap = 126;
     this.horizontal_gap = 500;
     this.book_gap = 20;
     
@@ -34,12 +33,20 @@ export default class Shelf extends Phaser.Scene {
   preload() {}
 
   init(data) {
-    this.total_books = data.total;
-    
+    this.angel = data.angel;
+    this.demon = data.demon;
+    this.neutral = data.neutral;
+
+    this.total_books = this.angel + this.demon + this.neutral;
+
     this.picked = null;
 
     const gameScene = this.scene.get(SceneKeys.Game);
     gameScene.clearAllBooks();
+    gameScene.total_books = this.total_books;
+    if (gameScene.bookCounterText){
+      gameScene.bookCounterText.setText(`Total Books: 0/${this.total_books}`);
+    }
     this.scene.switch(SceneKeys.Game);
     gameScene.cameras.main.fadeIn(500, 0, 0, 0);
   }
@@ -73,6 +80,12 @@ export default class Shelf extends Phaser.Scene {
     })
     .setInteractive()
     .setScrollFactor(0);
+
+    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setScrollFactor(0);
   }
 
   setupInput() {
@@ -101,59 +114,61 @@ export default class Shelf extends Phaser.Scene {
 
   setupIcons() {
     const spriteMap = {
-        'angel': 'angel_icon',
-        'demon': 'demon_icon',
-        'neutral': 'neutral_icon'
+      angel: 'angel_icon',
+      demon: 'demon_icon',
+      neutral: 'neutral_icon'
     };
-
+  
     const rowMap = {
-        1: this.row1,
-        2: this.row2,
-        3: this.row3,
-        4: this.row4,
-        5: this.row5
+      1: this.row1,
+      2: this.row2,
+      3: this.row3,
+      4: this.row4,
+      5: this.row5
     };
-
-    const types = Object.values(BookTypes);
-    const maxSlotsPerRow = 5;
-    const rowCount = 5;
-    const totalSlots = maxSlotsPerRow * rowCount;
-
-    // Clamp total_books to not exceed available slots
-    const bookCount = Math.min(this.total_books, totalSlots);
-
+  
+    const maxSlots = 25;
+    const bookCounts = {
+      angel: this.angel || 0,
+      demon: this.demon || 0,
+      neutral: this.neutral || 0
+    };
+  
+    const totalBooks = Math.min(bookCounts.angel + bookCounts.demon + bookCounts.neutral, maxSlots);
+  
     // Create a list of all possible (row, slot) pairs
     const allSlots = [];
-    for (let row = 1; row <= rowCount; row++) {
-        for (let slot = 0; slot < maxSlotsPerRow; slot++) {
-            allSlots.push({ row, slot });
-        }
-    }
-
-    // Shuffle and pick as many slots as we need
-    Phaser.Utils.Array.Shuffle(allSlots);
-    const chosenSlots = allSlots.slice(0, bookCount);
-
-    for (let i = 0; i < bookCount; i++) {
-        const { row, slot } = chosenSlots[i];
-        const book_type = Phaser.Math.RND.pick(types);
-        const book_sprite = spriteMap[book_type] || 'book';
-
-        const book_width = this.textures.get(book_sprite).getSourceImage().width;
-        const row_y = rowMap[row];
-
-        const x = this.left + slot * (book_width + this.book_gap);
-
-        const icon = new Icon(this, x, row_y, book_sprite, book_type);
-
-        icon.on('pointerdown', () => {
-            if (this.picked == null) {
-                this.picked = icon.book_type;
-                icon.destroy();
-            }
-        });
+    for (let row = 1; row <= 5; row++) {
+      for (let slot = 0; slot < 5; slot++) {
+        allSlots.push({ row, slot });
       }
     }
+
+    // Shuffle and pick as many slots as needed
+    Phaser.Utils.Array.Shuffle(allSlots);
+    const chosenSlots = allSlots.slice(0, totalBooks);
+  
+    // Generates list of book types
+    const types = [
+      ...Array(bookCounts.angel).fill('angel'),
+      ...Array(bookCounts.demon).fill('demon'),
+      ...Array(bookCounts.neutral).fill('neutral')
+    ].slice(0, totalBooks);
+  
+    types.forEach((type, i) => {
+      const { row, slot } = chosenSlots[i];
+      const x = this.left + slot * (this.textures.get(spriteMap[type]).getSourceImage().width + this.book_gap);
+      const y = rowMap[row];
+      const icon = new Icon(this, x, y, spriteMap[type], type);
+  
+      icon.on('pointerdown', () => {
+        if (!this.picked) {
+          this.picked = type;
+          icon.destroy();
+        }
+      });
+    });
+  }  
   
   update() {
     const cam = this.cameras.main;

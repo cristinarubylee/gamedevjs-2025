@@ -1,7 +1,6 @@
 import Phaser from 'phaser'
 
 import { SceneKeys } from '../consts/SceneKeys';
-import Book from '../objects/Book';
 
 export default class Preload extends Phaser.Scene
 {

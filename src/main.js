@@ -6,6 +6,8 @@ import Preload from './scenes/Preload';
 import Game from './scenes/Game'
 import Shelf from './scenes/Shelf';
 import LevelSelect from './scenes/LevelSelect'
+import Lose from './scenes/Lose'
+import Win from './scenes/Win';
 
 const config = {
   type: Phaser.AUTO,
@@ -36,5 +38,7 @@ game.scene.add(SceneKeys.Preload, Preload);
 game.scene.add(SceneKeys.Game, Game);
 game.scene.add(SceneKeys.Shelf, Shelf);
 game.scene.add(SceneKeys.LevelSelect, LevelSelect);
+game.scene.add(SceneKeys.Lose, Lose )
+game.scene.add(SceneKeys.Win, Win);
 
 game.scene.start(SceneKeys.Preload);

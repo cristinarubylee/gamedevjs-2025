@@ -14,8 +14,7 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
 
         const color = colorMap[book_type] || Phaser.Display.Color.HexStringToColor('#FFFFFF').color;
 
-        this.setBounce(0.5);
-        this.setFriction(1);
+        this.setFriction(0.1);
         this.setInteractive();
 
         this.glow_level = 0;

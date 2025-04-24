@@ -17,6 +17,7 @@ export default class Game extends Phaser.Scene {
     this.sensorOverlaps = new Map();
 
     this.picked = null;
+    this.total_books = 25;
   }
 
   preload() {}
@@ -58,6 +59,12 @@ export default class Game extends Phaser.Scene {
       fill: '#f00'
     })
     .setInteractive()
+    .setScrollFactor(0);
+
+    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
+      fontSize: '20px',
+      fill: '#f00'
+    })
     .setScrollFactor(0);
   }
   
@@ -110,6 +117,7 @@ export default class Game extends Phaser.Scene {
     this.switch.on('down', () => {
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
+      shelfScene.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`); // Update counter in shelf
       this.scene.switch(SceneKeys.Shelf);
     });
 
@@ -169,24 +177,22 @@ export default class Game extends Phaser.Scene {
     if (sensor.exploded) return;
 
     const overlaps = this.sensorOverlaps.get(sensor);
-    console.log(overlaps);
+    // console.log(overlaps);
     if (!overlaps) return;
 
     const matching = [...overlaps].filter(s => s.book_type === sensor.book_type && !s.exploded);
 
-    if (matching.length >= 3) {
+    if (matching.length >= 2) {
         const group = [sensor, ...matching];
         this.triggerExplosion(group);
     }
   }
 
   triggerExplosion(group) {
-    for (const s of group) {
-        s.exploded = true;
-        this.matter.world.remove(s);
-    }
 
     console.log(`Explosion for ${group.length} books of type "${group[0].book_type}"`);
+    this.scene.switch(SceneKeys.Lose);
+
   }
 
 
@@ -204,9 +210,16 @@ export default class Game extends Phaser.Scene {
     this.currentlyHeldBook = book;
     this.input.setDraggable(book);
     this.books.push(book);
+    this.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`);
 
     this.sensors.push(sensor);
     this.sensorOverlaps.set(sensor, new Set());
+
+    this.time.delayedCall(2000, () => {
+      if (this.books.length >= this.total_books){
+        this.scene.switch(SceneKeys.Win);
+      }
+    });
 
     this.picked = null;
   }

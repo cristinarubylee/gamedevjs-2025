@@ -6,9 +6,7 @@ export default class LevelSelect extends Phaser.Scene {
       super(SceneKeys.LevelSelect);
 
       this.levels = [
-        { id: 1, items: ['book1', 'book2'], total: 10},
-        { id: 2, items: ['book3', 'book4'], total: 20},
-        // etc.
+        { id: 1, angel: 0, demon: 5, neutral: 2},
       ];
       
     }
@@ -23,7 +21,7 @@ export default class LevelSelect extends Phaser.Scene {
         }).setInteractive();
   
         btn.on('pointerdown', () => {
-          this.scene.start(SceneKeys.Shelf, {total: level.total});
+          this.scene.start(SceneKeys.Shelf, level);
         });
       });
     }
