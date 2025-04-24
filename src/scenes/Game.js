@@ -125,12 +125,21 @@ export default class Game extends Phaser.Scene {
         const { bodyA, bodyB } = pair;
 
         if (bodyA.isSensorBook && bodyB.isSensorBook) {
-        this.sensorOverlaps.get(bodyA).add(bodyB);
-        this.sensorOverlaps.get(bodyB).add(bodyA);
+          if (bodyA.book_type === 'neutral' || bodyB.book_type === 'neutral') {
+            continue;
+          }
+          
+          this.sensorOverlaps.get(bodyA).add(bodyB);
+          this.sensorOverlaps.get(bodyB).add(bodyA);
 
-        this.checkForExplosion(bodyA);
-        this.checkForExplosion(bodyB);
-        }
+          if (bodyA.book_type == bodyB.book_type){
+            bodyA.parent_book.adjustGlow(1);
+            bodyB.parent_book.adjustGlow(1);
+          }
+
+          this.checkForExplosion(bodyA);
+          this.checkForExplosion(bodyB);
+          }
       }
     });
   
@@ -138,9 +147,19 @@ export default class Game extends Phaser.Scene {
       for (const pair of event.pairs) {
           const { bodyA, bodyB } = pair;
   
-      if (bodyA.isSensorBook && bodyB.isSensorBook) {
+        if (bodyA.isSensorBook && bodyB.isSensorBook) {
+          if (bodyA.book_type === 'neutral' || bodyB.book_type === 'neutral') {
+            continue;
+          }
+
           this.sensorOverlaps.get(bodyA).delete(bodyB);
           this.sensorOverlaps.get(bodyB).delete(bodyA);
+
+          if (bodyA.book_type == bodyB.book_type){
+            bodyA.parent_book.adjustGlow(-1);
+            bodyB.parent_book.adjustGlow(-1);
+          }
+          
         }
       }
     });
@@ -155,7 +174,7 @@ export default class Game extends Phaser.Scene {
 
     const matching = [...overlaps].filter(s => s.book_type === sensor.book_type && !s.exploded);
 
-    if (matching.length >= 2) {
+    if (matching.length >= 3) {
         const group = [sensor, ...matching];
         this.triggerExplosion(group);
     }
@@ -179,13 +198,7 @@ export default class Game extends Phaser.Scene {
     const x = pointer.worldX;
     const y = pointer.worldY;
 
-    // const bodies = this.matter.intersectPoint(x, y);
-    // // if (bodies.length > 0) return;
-
-    // const types = Object.values(BookTypes);
-    // const book_type = Phaser.Math.RND.pick(types);
-
-    const book = new Book(this, x, y, 'book', 'book_blur', this.picked);
+    const book = new Book(this, x, y, this.picked);
     const sensor = book.sensor;
 
     this.currentlyHeldBook = book;
@@ -218,6 +231,7 @@ export default class Game extends Phaser.Scene {
     if (this.down.isDown) cam.scrollY += scrollSpeed;
 
     this.books.forEach(book => {
+      book.updateGlow();
       book.updateSensor();
       book.updateShadow();
     });
