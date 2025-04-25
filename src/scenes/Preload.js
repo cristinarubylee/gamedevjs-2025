@@ -17,13 +17,18 @@ export default class Preload extends Phaser.Scene
 		this.load.image('demon_icon', '/assets/demon_icon.png');
 		this.load.image('neutral_icon', '/assets/neutral_icon.png');
 
+		this.load.image('angel', '/assets/angel_physical.png');
+		this.load.image('demon', '/assets/demon_physical.png');
+		this.load.image('neutral', '/assets/neutral_physical.png');
+
 		this.load.image('background', '/assets/background.png');
 		this.load.image('foreground', '/assets/foreground.png');
 		this.load.image('shelf', '/assets/shelves.png');
+
 	}
 
 	create()
 	{
-		this.scene.start(SceneKeys.Game)
+		this.scene.start(SceneKeys.LevelSelect)
 	}
 }

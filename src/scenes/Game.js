@@ -17,16 +17,16 @@ export default class Game extends Phaser.Scene {
     this.sensorOverlaps = new Map();
 
     this.picked = null;
+    this.total_books = 25;
   }
 
   preload() {}
 
   create() {
     this.setupPhysicsAndLayers();
+    this.setupUI();
     this.setupInput();
     this.setupCollisions();
-
-    this.cameras.main.fadeIn(500, 0, 0, 0);
   }
 
   setupPhysicsAndLayers() {
@@ -53,6 +53,21 @@ export default class Game extends Phaser.Scene {
     this.layerFront.displayHeight = this.worldHeight;
   }
 
+  setupUI() {
+    this.backBtn = this.add.text(10, 10, '← Menu', {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setInteractive()
+    .setScrollFactor(0);
+
+    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setScrollFactor(0);
+  }
+  
   setupInput() {
     // Keybinds
     this.leftRotate = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -102,7 +117,13 @@ export default class Game extends Phaser.Scene {
     this.switch.on('down', () => {
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
+      shelfScene.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`); // Update counter in shelf
       this.scene.switch(SceneKeys.Shelf);
+    });
+
+    // Back to level select
+    this.backBtn.on('pointerdown', () => {
+      this.scene.switch(SceneKeys.LevelSelect);
     });
   }
 
@@ -112,12 +133,21 @@ export default class Game extends Phaser.Scene {
         const { bodyA, bodyB } = pair;
 
         if (bodyA.isSensorBook && bodyB.isSensorBook) {
-        this.sensorOverlaps.get(bodyA).add(bodyB);
-        this.sensorOverlaps.get(bodyB).add(bodyA);
+          if (bodyA.book_type === 'neutral' || bodyB.book_type === 'neutral') {
+            continue;
+          }
+          
+          this.sensorOverlaps.get(bodyA).add(bodyB);
+          this.sensorOverlaps.get(bodyB).add(bodyA);
 
-        this.checkForExplosion(bodyA);
-        this.checkForExplosion(bodyB);
-        }
+          if (bodyA.book_type == bodyB.book_type){
+            bodyA.parent_book.adjustGlow(1);
+            bodyB.parent_book.adjustGlow(1);
+          }
+
+          this.checkForExplosion(bodyA);
+          this.checkForExplosion(bodyB);
+          }
       }
     });
   
@@ -125,9 +155,19 @@ export default class Game extends Phaser.Scene {
       for (const pair of event.pairs) {
           const { bodyA, bodyB } = pair;
   
-      if (bodyA.isSensorBook && bodyB.isSensorBook) {
+        if (bodyA.isSensorBook && bodyB.isSensorBook) {
+          if (bodyA.book_type === 'neutral' || bodyB.book_type === 'neutral') {
+            continue;
+          }
+
           this.sensorOverlaps.get(bodyA).delete(bodyB);
           this.sensorOverlaps.get(bodyB).delete(bodyA);
+
+          if (bodyA.book_type == bodyB.book_type){
+            bodyA.parent_book.adjustGlow(-1);
+            bodyB.parent_book.adjustGlow(-1);
+          }
+          
         }
       }
     });
@@ -137,7 +177,7 @@ export default class Game extends Phaser.Scene {
     if (sensor.exploded) return;
 
     const overlaps = this.sensorOverlaps.get(sensor);
-    console.log(overlaps);
+    // console.log(overlaps);
     if (!overlaps) return;
 
     const matching = [...overlaps].filter(s => s.book_type === sensor.book_type && !s.exploded);
@@ -149,12 +189,10 @@ export default class Game extends Phaser.Scene {
   }
 
   triggerExplosion(group) {
-    for (const s of group) {
-        s.exploded = true;
-        this.matter.world.remove(s);
-    }
 
     console.log(`Explosion for ${group.length} books of type "${group[0].book_type}"`);
+    this.scene.switch(SceneKeys.Lose);
+
   }
 
 
@@ -166,21 +204,22 @@ export default class Game extends Phaser.Scene {
     const x = pointer.worldX;
     const y = pointer.worldY;
 
-    // const bodies = this.matter.intersectPoint(x, y);
-    // // if (bodies.length > 0) return;
-
-    // const types = Object.values(BookTypes);
-    // const book_type = Phaser.Math.RND.pick(types);
-
-    const book = new Book(this, x, y, 'book', 'book_blur', this.picked);
+    const book = new Book(this, x, y, this.picked);
     const sensor = book.sensor;
 
     this.currentlyHeldBook = book;
     this.input.setDraggable(book);
     this.books.push(book);
+    this.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`);
 
     this.sensors.push(sensor);
     this.sensorOverlaps.set(sensor, new Set());
+
+    this.time.delayedCall(2000, () => {
+      if (this.books.length >= this.total_books){
+        this.scene.switch(SceneKeys.Win);
+      }
+    });
 
     this.picked = null;
   }
@@ -205,6 +244,7 @@ export default class Game extends Phaser.Scene {
     if (this.down.isDown) cam.scrollY += scrollSpeed;
 
     this.books.forEach(book => {
+      book.updateGlow();
       book.updateSensor();
       book.updateShadow();
     });

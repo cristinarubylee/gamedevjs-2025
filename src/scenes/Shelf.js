@@ -11,11 +11,11 @@ export default class Shelf extends Phaser.Scene {
     this.worldHeight = 1000;
     this.groundHeight = 100;
 
+    this.icons = [];
+
     // Constants to help organize the books on the shelf
-    const vert_gap = 126;
     this.horizontal_gap = 500;
     this.book_gap = 20;
-    this.total_books = 30;
     
     // x value of the leftmost shelf wall
     this.left = 200;
@@ -32,12 +32,30 @@ export default class Shelf extends Phaser.Scene {
 
   preload() {}
 
+  init(data) {
+    this.angel = data.angel;
+    this.demon = data.demon;
+    this.neutral = data.neutral;
+
+    this.total_books = this.angel + this.demon + this.neutral;
+
+    this.picked = null;
+
+    const gameScene = this.scene.get(SceneKeys.Game);
+    gameScene.clearAllBooks();
+    gameScene.total_books = this.total_books;
+    if (gameScene.bookCounterText){
+      gameScene.bookCounterText.setText(`Total Books: 0/${this.total_books}`);
+    }
+    this.scene.switch(SceneKeys.Game);
+    gameScene.cameras.main.fadeIn(500, 0, 0, 0);
+  }
+
   create() {
     this.setupPhysicsAndLayers();
     this.setupIcons();
+    this.setupUI();
     this.setupInput();
-    this.setupKeyboard();
-    this.setupDragEvents();
   }
 
   setupPhysicsAndLayers() {
@@ -55,138 +73,109 @@ export default class Shelf extends Phaser.Scene {
     this.layerBack.displayHeight = this.worldHeight;
   }
 
-  setupIcons() {
-    const spriteMap = {
-        'angel': 'angel_icon',
-        'demon': 'demon_icon',
-        'neutral': 'neutral_icon'
-    };
+  setupUI() {
+    this.backBtn = this.add.text(10, 10, '← Menu', {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setInteractive()
+    .setScrollFactor(0);
 
-    const rowMap = {
-        1: this.row1,
-        2: this.row2,
-        3: this.row3,
-        4: this.row4,
-        5: this.row5
-    };
-
-    const types = Object.values(BookTypes);
-    const maxSlotsPerRow = 5;
-    const rowCount = 5;
-    const totalSlots = maxSlotsPerRow * rowCount;
-
-    // Clamp total_books to not exceed available slots
-    const bookCount = Math.min(this.total_books, totalSlots);
-
-    // Create a list of all possible (row, slot) pairs
-    const allSlots = [];
-    for (let row = 1; row <= rowCount; row++) {
-        for (let slot = 0; slot < maxSlotsPerRow; slot++) {
-            allSlots.push({ row, slot });
-        }
-    }
-
-    // Shuffle and pick as many slots as we need
-    Phaser.Utils.Array.Shuffle(allSlots);
-    const chosenSlots = allSlots.slice(0, bookCount);
-
-    for (let i = 0; i < bookCount; i++) {
-        const { row, slot } = chosenSlots[i];
-        const book_type = Phaser.Math.RND.pick(types);
-        const book_sprite = spriteMap[book_type] || 'book';
-
-        const book_width = this.textures.get(book_sprite).getSourceImage().width;
-        const row_y = rowMap[row];
-
-        const x = this.left + slot * (book_width + this.book_gap);
-
-        const icon = new Icon(this, x, row_y, book_sprite, book_type);
-
-        icon.on('pointerdown', () => {
-            if (this.picked == null) {
-                this.picked = icon.book_type;
-                icon.destroy();
-            }
-        });
-    }
-}
-
+    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
+      fontSize: '20px',
+      fill: '#f00'
+    })
+    .setScrollFactor(0);
+  }
 
   setupInput() {
-    // Create book on click
-    // this.input.on('pointerdown', this.handlePointerDown, this);
-    // this.input.on('pointerup', this.handlePointerUp, this);
+    // Keybinds
+    this.switch = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    this.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
 
     // Allow scroll with mouse wheel
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       this.cameras.main.scrollY += deltaY * 0.5;
     });
+
+    // Switch scene
+    this.switch.on('down', () => {
+      const gameScene = this.scene.get(SceneKeys.Game);
+      gameScene.picked = this.picked;
+      this.scene.switch(SceneKeys.Game);
+    });
+
+    // Back to level select
+    this.backBtn.on('pointerdown', () => {
+      this.scene.switch(SceneKeys.LevelSelect);
+    });
   }
 
-  setupKeyboard() {
-    this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-    this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-    this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+  setupIcons() {
+    const spriteMap = {
+      angel: 'angel_icon',
+      demon: 'demon_icon',
+      neutral: 'neutral_icon'
+    };
+  
+    const rowMap = {
+      1: this.row1,
+      2: this.row2,
+      3: this.row3,
+      4: this.row4,
+      5: this.row5
+    };
+  
+    const maxSlots = 25;
+    const bookCounts = {
+      angel: this.angel || 0,
+      demon: this.demon || 0,
+      neutral: this.neutral || 0
+    };
+  
+    const totalBooks = Math.min(bookCounts.angel + bookCounts.demon + bookCounts.neutral, maxSlots);
+  
+    // Create a list of all possible (row, slot) pairs
+    const allSlots = [];
+    for (let row = 1; row <= 5; row++) {
+      for (let slot = 0; slot < 5; slot++) {
+        allSlots.push({ row, slot });
+      }
+    }
 
-    this.keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-
-    // this.keyA.on('down', () => {
-    //   if (this.currentlyHeldBook) this.currentlyHeldBook.rotate(15);
-    // });
-
-    // this.keyS.on('down', () => {
-    //   if (this.currentlyHeldBook) this.currentlyHeldBook.rotate(-15);
-    // });
-
-    this.keyP.on('down', () => {
-        const gameScene = this.scene.get(SceneKeys.Game);
-        gameScene.picked = this.picked;
-        this.scene.switch(SceneKeys.Game);
+    // Shuffle and pick as many slots as needed
+    Phaser.Utils.Array.Shuffle(allSlots);
+    const chosenSlots = allSlots.slice(0, totalBooks);
+  
+    // Generates list of book types
+    const types = [
+      ...Array(bookCounts.angel).fill('angel'),
+      ...Array(bookCounts.demon).fill('demon'),
+      ...Array(bookCounts.neutral).fill('neutral')
+    ].slice(0, totalBooks);
+  
+    types.forEach((type, i) => {
+      const { row, slot } = chosenSlots[i];
+      const x = this.left + slot * (this.textures.get(spriteMap[type]).getSourceImage().width + this.book_gap);
+      const y = rowMap[row];
+      const icon = new Icon(this, x, y, spriteMap[type], type);
+  
+      icon.on('pointerdown', () => {
+        if (!this.picked) {
+          this.picked = type;
+          icon.destroy();
+        }
       });
-
-    // this.keySpace.on('down', this.clearAllBooks, this);
-  }
-
-  setupDragEvents() {
-    // this.input.on('dragstart', (pointer, obj) => {
-    //   obj.setStatic(true);
-    //   this.currentlyHeldBook = obj;
-    // });
-
-    // this.input.on('drag', (pointer, obj, x, y) => {
-    //   obj.setPosition(pointer.worldX, pointer.worldY);
-    //   if (x > 0 && x < 800 && y > 0 && y < this.worldHeight - this.groundHeight) {
-    //     obj.setPosition(pointer.worldX, pointer.worldY);
-    //   }
-    // });
-
-    // this.input.on('dragend', (pointer, obj) => {
-    //   obj.setStatic(false);
-    //   this.currentlyHeldBook = null;
-    // });
-  }
-
-  handlePointerDown(pointer) {
-    const x = pointer.worldX;
-    const y = pointer.worldY;
-
-  }
-
-  handlePointerUp() {
-    // if (this.currentlyHeldBook) {
-    //   this.currentlyHeldBook = null;
-    // }
-  }
-
-
+    });
+  }  
+  
   update() {
     const cam = this.cameras.main;
     const scrollSpeed = 5;
 
-    if (this.keyUp.isDown) cam.scrollY -= scrollSpeed;
-    if (this.keyDown.isDown) cam.scrollY += scrollSpeed;
+    if (this.up.isDown) cam.scrollY -= scrollSpeed;
+    if (this.down.isDown) cam.scrollY += scrollSpeed;
 
   }
 }

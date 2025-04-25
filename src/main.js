@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import QuadImagePlugin from 'phaser3-rex-plugins/plugins/quadimage-plugin.js';
 
+import { SceneKeys } from './consts/SceneKeys';
 import Preload from './scenes/Preload';
 import Game from './scenes/Game'
-import { SceneKeys } from './consts/SceneKeys';
 import Shelf from './scenes/Shelf';
+import LevelSelect from './scenes/LevelSelect'
+import Lose from './scenes/Lose'
+import Win from './scenes/Win';
 
 const config = {
   type: Phaser.AUTO,
@@ -34,5 +37,8 @@ const game = new Phaser.Game(config);
 game.scene.add(SceneKeys.Preload, Preload);
 game.scene.add(SceneKeys.Game, Game);
 game.scene.add(SceneKeys.Shelf, Shelf);
+game.scene.add(SceneKeys.LevelSelect, LevelSelect);
+game.scene.add(SceneKeys.Lose, Lose )
+game.scene.add(SceneKeys.Win, Win);
 
 game.scene.start(SceneKeys.Preload);

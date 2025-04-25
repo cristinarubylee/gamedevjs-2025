@@ -1,5 +1,8 @@
 export const SceneKeys = {
 	Preload: 'preload',
     Game: 'game',
-    Shelf: 'shelf'
+    Shelf: 'shelf',
+    LevelSelect: 'level',
+    Lose: 'lose',
+    Win: 'win'
 }
