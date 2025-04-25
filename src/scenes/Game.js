@@ -59,19 +59,23 @@ export default class Game extends Phaser.Scene {
       fontSize: '22px',
       fill: '#E2E2E2',
     })
+    .setDepth(99)
     .setScrollFactor(0);
 
     this.backBtn = this.add.image(47, 460, 'exit_ui')
+    .setDepth(99)
     .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
     this.restartBtn = this.add.image(50, 550, 'restart_ui')
+    .setDepth(99)
     .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
     this.shelfBtn = this.add.image(750, 50, 'shelf_ui')
+    .setDepth(99)
     .setInteractive()
     .setScrollFactor(0);
 
@@ -249,10 +253,13 @@ export default class Game extends Phaser.Scene {
 
     this.sensors.push(sensor);
     this.sensorOverlaps.set(sensor, new Set());
-
-    this.time.delayedCall(2000, () => {
+    
+    this.time.delayedCall(1000, () => {
       if (this.books.length >= this.total_books){
-        this.scene.switch(SceneKeys.Win);
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.switch(SceneKeys.Win);
+        });
       }
     });
 
@@ -290,6 +297,7 @@ export default class Game extends Phaser.Scene {
     if (this.down.isDown) cam.scrollY += scrollSpeed;
 
     this.books.forEach(book => {
+      book.updateMovement();
       book.updateGlow();
       book.updateSensor();
       book.updateShadow();

@@ -6,6 +6,8 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         super(scene.matter.world, x, y, book_type);
         this.scene.add.existing(this);
 
+        this.book_type = book_type;
+
         const colorMap = {
             'angel': Phaser.Display.Color.HexStringToColor('#F2E6C9').color, // Cream
             'demon': Phaser.Display.Color.HexStringToColor('#F2E6C9').color, // Red
@@ -17,14 +19,21 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         this.setFriction(0.1);
         this.setInteractive();
 
-        this.glow_level = 0;
-
-        if (book_type != BookTypes.Neutral){
-            this.glow_map = this.createGlows(this.x, this.y, color);
-            this.glow = this.glow_map[this.glow_level];
+        switch (book_type) {
+            case BookTypes.Demon:
+                this.sensor = this.createSensor(this.x, this.y, book_type);
+                this.glow = this.createGlow(this.x, this.y, color);
+                break;
+            case BookTypes.Angel:
+                this.offset = 0;
+                this.time = 0;
+                this.sensor = this.createSensor(this.x, this.y, book_type);
+                this.glow = this.createGlow(this.x, this.y, color);
+                break;
+            case BookTypes.Neutral:
+                break;
         }
-        
-        this.sensor = this.createSensor(this.x, this.y, book_type);
+
         this.shadow = this.createShadow(this.x, this.y, book_type);
     }
 
@@ -32,27 +41,21 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
         this.setRotation(this.rotation + Phaser.Math.DegToRad(degrees));
     }
 
-    createGlows(x, y, color) {
-        const glow_map = {};
-        const intensities = [0, 1, 2, 3, 4, 5];
+    createGlow(x, y, color) {
+        const glow = this.scene.add.graphics({ x, y });
+        glow.setDepth(20);
+        glow.setBlendMode(Phaser.BlendModes.ADD);
 
-        for (const intensity of intensities) {
-            const glow = this.scene.add.graphics({ x, y });
-            glow.setDepth(20);
-            glow.setBlendMode(Phaser.BlendModes.ADD);
-
-            for (let i = 0; i < 10; i++) {
-                const alpha = 0.03 * intensity;
-                const offset = i;
-                glow.fillStyle(color, alpha);
-                glow.fillCircle(0 , 0, 10 * offset)
-              }
-
-            glow.setVisible(false);
-            glow_map[intensity] = glow;
+        for (let i = 0; i < 10; i++) {
+            const alpha = 0.03;
+            const offset = i;
+            glow.fillStyle(color, alpha);
+            glow.fillCircle(0 , 0, 10 * offset) 
         }
 
-        return glow_map;
+        glow.setVisible(false);
+        
+        return glow;
     }
 
     createSensor(x, y, book_type){
@@ -100,18 +103,34 @@ export default class Book extends Phaser.Physics.Matter.Sprite {
     }
 
     adjustGlow(value) {
-        this.glow_level = Phaser.Math.Clamp(this.glow_level + value, 0, 5);
         if (this.glow){
-            this.glow.setVisible(false);
-            this.glow = this.glow_map[this.glow_level];
-            this.glow.setVisible(true);
+            if (value > 0){
+                this.glow.setVisible(true);
+            } else {
+                this.glow.setVisible(false);
+            }
         }
+    }
+
+    updateMovement(){
+        if (this.isStatic() || this.book_type !== BookTypes.Angel){
+            return;
+        }
+        
+        // Constants for angel movement
+        const amplitude = 2;
+        const speed = 3;
+
+
+        this.time += 0.1;
+        const velocityY = Math.sin(this.time * speed) * amplitude;
+        this.setVelocityY(velocityY);
     }
 
     updateSensor(){
         if (this.sensor) {
             this.scene.matter.body.setPosition(this.sensor, {x: this.x, y: this.y});
-            // this.scene.matter.body.setAngle(this.sensor, this.angle * Phaser.Math.DEG_TO_RAD);
+            this.scene.matter.body.setAngle(this.sensor, this.angle * Phaser.Math.DEG_TO_RAD);
         }
     }
 

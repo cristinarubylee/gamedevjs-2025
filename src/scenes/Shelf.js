@@ -75,19 +75,23 @@ export default class Shelf extends Phaser.Scene {
       fontSize: '22px',
       fill: '#E2E2E2',
     })
+    .setDepth(99)
     .setScrollFactor(0);
 
     this.backBtn = this.add.image(47, 460, 'exit_ui')
+    .setDepth(99)
     .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
     this.restartBtn = this.add.image(50, 550, 'restart_ui')
+    .setDepth(99)
     .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
     this.tableBtn = this.add.image(750, 50, 'table_ui')
+    .setDepth(99)
     .setInteractive()
     .setScrollFactor(0);
   }

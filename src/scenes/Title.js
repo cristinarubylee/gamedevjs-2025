@@ -18,11 +18,20 @@ export default class Title extends Phaser.Scene {
   create() {
     this.add.image(0, 0, 'title').setOrigin(0);
 
-    this.add.text(400, 80, 'Click anywhere to start', {
+    const startText = this.add.text(400, 80, 'Click anywhere to start', {
       fontFamily: 'ChalkFont',
       fontSize: '32px',
       fill: '#E2E2E2'
     }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: startText,
+      scale: { from: 1, to: 1.1 },
+      ease: 'Sine.easeInOut',
+      duration: 800,
+      yoyo: true,
+      repeat: -1
+    });
 
     this.input.on('pointerdown', () => {
       this.cameras.main.fadeOut(500, 0, 0, 0);
