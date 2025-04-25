@@ -25,10 +25,27 @@ export default class Preload extends Phaser.Scene
 		this.load.image('foreground', '/assets/foreground.png');
 		this.load.image('shelf', '/assets/shelves.png');
 
+		this.load.image('table_ui', '/assets/table.png');
+		this.load.image('shelf_ui', '/assets/shelf_ui.png');
+		this.load.image('exit_ui', '/assets/exit.png');
+		this.load.image('restart_ui', '/assets/restart.png');
+
+		this.load.image('level_1', '/assets/level_1.png');
+		this.load.image('level_2', '/assets/level_2.png');
+		this.load.image('level_3', '/assets/level_3.png');
+		this.load.image('level_4', '/assets/level_4.png');
+		this.load.image('level_5', '/assets/level_5.png');
+
+		this.load.image('level_background', '/assets/level_background.png');
+
+		this.load.image('title', '/assets/title.png')
+
+		this.fontReady = document.fonts.load('16px ChalkFont');
 	}
 
-	create()
+	async create()
 	{
-		this.scene.start(SceneKeys.LevelSelect)
+		await this.fontReady;
+		this.scene.start(SceneKeys.Title)
 	}
 }

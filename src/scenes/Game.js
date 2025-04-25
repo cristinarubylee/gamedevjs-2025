@@ -54,19 +54,33 @@ export default class Game extends Phaser.Scene {
   }
 
   setupUI() {
-    this.backBtn = this.add.text(10, 10, '← Menu', {
-      fontSize: '20px',
-      fill: '#f00'
+    this.bookCounterText = this.add.text(20, 20, `Books balanced: 0/${this.total_books}`, {
+      fontFamily: 'ChalkFont',
+      fontSize: '22px',
+      fill: '#E2E2E2',
     })
+    .setScrollFactor(0);
+
+    this.backBtn = this.add.image(47, 460, 'exit_ui')
+    .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
-    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
-      fontSize: '20px',
-      fill: '#f00'
-    })
+    this.restartBtn = this.add.image(50, 550, 'restart_ui')
+    .setOrigin(0.5)
+    .setInteractive()
     .setScrollFactor(0);
+
+    this.shelfBtn = this.add.image(750, 50, 'shelf_ui')
+    .setInteractive()
+    .setScrollFactor(0);
+
+    this.uiButtons = [this.backBtn, this.shelfBtn, this.restartBtn];
   }
+
+  isPointerOnUI(pointer) {
+    return this.uiButtons.some(btn => btn.getBounds().contains(pointer.x, pointer.y));
+  }  
   
   setupInput() {
     // Keybinds
@@ -76,10 +90,6 @@ export default class Game extends Phaser.Scene {
     this.clearBooks = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-
-    // Create book on click
-    this.input.on('pointerdown', this.handlePointerDown, this);
-    this.input.on('pointerup', this.handlePointerUp, this);
 
     // Drag events
     this.input.on('dragstart', (pointer, obj) => {
@@ -117,7 +127,13 @@ export default class Game extends Phaser.Scene {
     this.switch.on('down', () => {
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
-      shelfScene.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`); // Update counter in shelf
+      shelfScene.bookCounterText.setText(`Books balanced: ${this.books.length}/${this.total_books}`); // Update counter in shelf
+      this.scene.switch(SceneKeys.Shelf);
+    });
+    this.shelfBtn.on('pointerdown', () => {
+      const shelfScene = this.scene.get(SceneKeys.Shelf);
+      shelfScene.picked = this.picked;
+      shelfScene.bookCounterText.setText(`Books balanced: ${this.books.length}/${this.total_books}`); // Update counter in shelf
       this.scene.switch(SceneKeys.Shelf);
     });
 
@@ -125,6 +141,20 @@ export default class Game extends Phaser.Scene {
     this.backBtn.on('pointerdown', () => {
       this.scene.switch(SceneKeys.LevelSelect);
     });
+
+    // Restart level
+    this.restartBtn.on('pointerdown', () => {
+      this.scene.launch(SceneKeys.Shelf);
+    });
+
+    // Create book on click
+    this.input.on('pointerdown', (pointer) => {
+       if (!this.isPointerOnUI(pointer)) {
+        console.log(this.sensorOverlaps);
+        this.handlePointerDown(pointer);
+      }
+    }, this);
+    this.input.on('pointerup', this.handlePointerUp, this);
   }
 
   setupCollisions() {
@@ -160,8 +190,10 @@ export default class Game extends Phaser.Scene {
             continue;
           }
 
-          this.sensorOverlaps.get(bodyA).delete(bodyB);
-          this.sensorOverlaps.get(bodyB).delete(bodyA);
+          if (this.sensorOverlaps.size !== 0){
+            this.sensorOverlaps.get(bodyA).delete(bodyB);
+            this.sensorOverlaps.get(bodyB).delete(bodyA);
+          }
 
           if (bodyA.book_type == bodyB.book_type){
             bodyA.parent_book.adjustGlow(-1);
@@ -177,7 +209,6 @@ export default class Game extends Phaser.Scene {
     if (sensor.exploded) return;
 
     const overlaps = this.sensorOverlaps.get(sensor);
-    // console.log(overlaps);
     if (!overlaps) return;
 
     const matching = [...overlaps].filter(s => s.book_type === sensor.book_type && !s.exploded);
@@ -191,7 +222,11 @@ export default class Game extends Phaser.Scene {
   triggerExplosion(group) {
 
     console.log(`Explosion for ${group.length} books of type "${group[0].book_type}"`);
-    this.scene.switch(SceneKeys.Lose);
+    this.cameras.main.fadeOut(400, 255, 255, 255);
+
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.switch(SceneKeys.Lose);
+    });
 
   }
 
@@ -210,7 +245,7 @@ export default class Game extends Phaser.Scene {
     this.currentlyHeldBook = book;
     this.input.setDraggable(book);
     this.books.push(book);
-    this.bookCounterText.setText(`Total Books: ${this.books.length}/${this.total_books}`);
+    this.bookCounterText.setText(`Books balanced: ${this.books.length}/${this.total_books}`);
 
     this.sensors.push(sensor);
     this.sensorOverlaps.set(sensor, new Set());
@@ -234,6 +269,17 @@ export default class Game extends Phaser.Scene {
     this.books.forEach(book => book.destroy());
     this.books = [];
     this.currentlyHeldBook = null;
+  }
+
+  resetGame(total_books){
+    this.clearAllBooks();
+    this.sensorOverlaps = new Map();
+    this.total_books = total_books;
+    this.picked = null;
+    if (this.bookCounterText){
+      this.bookCounterText.setText(`Books balanced: 0/${this.total_books}`);
+    }
+    this.cameras.main.scrollY = this.worldHeight - this.scale.height; // Scroll to the bottom
   }
 
   update() {

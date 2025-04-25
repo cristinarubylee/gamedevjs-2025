@@ -42,11 +42,7 @@ export default class Shelf extends Phaser.Scene {
     this.picked = null;
 
     const gameScene = this.scene.get(SceneKeys.Game);
-    gameScene.clearAllBooks();
-    gameScene.total_books = this.total_books;
-    if (gameScene.bookCounterText){
-      gameScene.bookCounterText.setText(`Total Books: 0/${this.total_books}`);
-    }
+    gameScene.resetGame(this.total_books);
     this.scene.switch(SceneKeys.Game);
     gameScene.cameras.main.fadeIn(500, 0, 0, 0);
   }
@@ -74,17 +70,25 @@ export default class Shelf extends Phaser.Scene {
   }
 
   setupUI() {
-    this.backBtn = this.add.text(10, 10, '← Menu', {
-      fontSize: '20px',
-      fill: '#f00'
+    this.bookCounterText = this.add.text(20, 20, `Books balanced: 0/${this.total_books}`, {
+      fontFamily: 'ChalkFont',
+      fontSize: '22px',
+      fill: '#E2E2E2',
     })
+    .setScrollFactor(0);
+
+    this.backBtn = this.add.image(47, 460, 'exit_ui')
+    .setOrigin(0.5)
     .setInteractive()
     .setScrollFactor(0);
 
-    this.bookCounterText = this.add.text(10, 50, `Total Books: 0/${this.total_books}`, {
-      fontSize: '20px',
-      fill: '#f00'
-    })
+    this.restartBtn = this.add.image(50, 550, 'restart_ui')
+    .setOrigin(0.5)
+    .setInteractive()
+    .setScrollFactor(0);
+
+    this.tableBtn = this.add.image(750, 50, 'table_ui')
+    .setInteractive()
     .setScrollFactor(0);
   }
 
@@ -105,10 +109,20 @@ export default class Shelf extends Phaser.Scene {
       gameScene.picked = this.picked;
       this.scene.switch(SceneKeys.Game);
     });
+    this.tableBtn.on('pointerdown', () => {
+      const gameScene = this.scene.get(SceneKeys.Game);
+      gameScene.picked = this.picked;
+      this.scene.switch(SceneKeys.Game);
+    });
 
     // Back to level select
     this.backBtn.on('pointerdown', () => {
       this.scene.switch(SceneKeys.LevelSelect);
+    });
+
+    // Restart level
+    this.restartBtn.on('pointerdown', () => {
+      this.scene.start(SceneKeys.Shelf);
     });
   }
 

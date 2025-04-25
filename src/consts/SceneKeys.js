@@ -4,5 +4,6 @@ export const SceneKeys = {
     Shelf: 'shelf',
     LevelSelect: 'level',
     Lose: 'lose',
-    Win: 'win'
+    Win: 'win',
+    Title: 'title'
 }
