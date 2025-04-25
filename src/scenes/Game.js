@@ -125,7 +125,7 @@ export default class Game extends Phaser.Scene {
     });
 
     // Clear books
-    this.clearBooks.on('down', this.clearAllBooks, this);
+    // this.clearBooks.on('down', this.clearAllBooks, this);
 
     // Switch scene
     this.switch.on('down', () => {

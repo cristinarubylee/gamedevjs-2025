@@ -123,7 +123,7 @@ export default class Shelf extends Phaser.Scene {
 
     // Back to level select
     this.backBtn.on('pointerdown', () => {
-      tthis.sound.play('click_sound', { volume: 0.5 });
+      this.sound.play('click_sound', { volume: 0.5 });
       this.scene.switch(SceneKeys.LevelSelect);
     });
 
