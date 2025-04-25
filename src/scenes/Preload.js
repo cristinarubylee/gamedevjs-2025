@@ -10,6 +10,14 @@ export default class Preload extends Phaser.Scene
 
 	preload()
 	{
+		this.load.audio('title_music', '/assets/title.mp3');
+		this.load.audio('click_sound', '/assets/click.mp3');
+		this.load.audio('ui_click_sound', '/assets/click2.mp3');
+		this.load.audio('take_sound', '/assets/take.mp3');
+		this.load.audio('place_sound', '/assets/take.mp3');
+		this.load.audio('dead_sound', '/assets/dead.mp3');
+		this.load.audio('doom_sound', '/assets/doom.mp3');
+
 		this.load.image('book', '/assets/book.png');
 		this.load.image('book_blur', '/assets/book_blur.png');
 

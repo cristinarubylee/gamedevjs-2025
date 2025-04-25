@@ -9,17 +9,35 @@ export default class Win extends Phaser.Scene
     }
 
     create() {
-        this.add.text(100, 50, 'You Win!', { fontSize: '32px', fill: '#fff' });
+        this.add.text(400, 250, 'You did it!', {
+            fontFamily: 'ChalkFont',
+            fontSize: '32px',
+            fill: '#fff'
+        }).setOrigin(0.5);
 
-        const btn1 = this.add.text(100, 100, "Level Select", {
-            fontSize: '24px',
-            fill: '#0f0',
-          }).setInteractive();
+        const backBtn = this.add.image(400, 350, 'exit_ui')
+        .setDepth(99)
+        .setOrigin(0.5)
+        .setInteractive()
+        .setScrollFactor(0);
+
+        // const restartBtn = this.add.image(400, 350, 'restart_ui')
+        // .setDepth(99)
+        // .setOrigin(0.5)
+        // .setInteractive()
+        // .setScrollFactor(0);
 
     
-        btn1.on('pointerdown', () => {
+        // restartBtn.on('pointerdown', () => {
+        //     this.sound.play('click_sound', { volume: 0.5 });
+        //     this.scene.start(SceneKeys.Shelf);
+        // });
+
+        backBtn.on('pointerdown', () => {
+            this.sound.play('click_sound', { volume: 0.5 });
             this.scene.switch(SceneKeys.LevelSelect);
         });
+
       }
 }
     

@@ -9,8 +9,8 @@ export default class LevelSelect extends Phaser.Scene {
         { id: 1, angel: 0, demon: 5, neutral: 2},
         { id: 2, angel: 2, demon: 5, neutral: 2},
         { id: 3, angel: 8, demon: 0, neutral: 0},
-        { id: 4, angel: 0, demon: 0, neutral: 1},
-        { id: 2, angel: 5, demon: 5, neutral: 0},
+        { id: 4, angel: 5, demon: 5, neutral: 0},
+        { id: 2, angel: 10, demon: 10, neutral: 5},
       ];
       
     }
@@ -52,7 +52,8 @@ export default class LevelSelect extends Phaser.Scene {
           });
         });
   
-        btn.on('pointerdown', () => {
+        btn.on('pointerdown', () => {this.sound.stopAll();
+          this.sound.play('click_sound', { volume: 0.75 });
           this.scene.start(SceneKeys.Shelf, level);
         });
       });

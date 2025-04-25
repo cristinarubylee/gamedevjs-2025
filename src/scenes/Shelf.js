@@ -109,11 +109,13 @@ export default class Shelf extends Phaser.Scene {
 
     // Switch scene
     this.switch.on('down', () => {
+      this.sound.play('ui_click_sound', { volume: 0.25 });
       const gameScene = this.scene.get(SceneKeys.Game);
       gameScene.picked = this.picked;
       this.scene.switch(SceneKeys.Game);
     });
     this.tableBtn.on('pointerdown', () => {
+      this.sound.play('ui_click_sound', { volume: 0.25 });
       const gameScene = this.scene.get(SceneKeys.Game);
       gameScene.picked = this.picked;
       this.scene.switch(SceneKeys.Game);
@@ -121,11 +123,13 @@ export default class Shelf extends Phaser.Scene {
 
     // Back to level select
     this.backBtn.on('pointerdown', () => {
+      tthis.sound.play('click_sound', { volume: 0.5 });
       this.scene.switch(SceneKeys.LevelSelect);
     });
 
     // Restart level
     this.restartBtn.on('pointerdown', () => {
+      this.sound.play('click_sound', { volume: 0.5 });
       this.scene.start(SceneKeys.Shelf);
     });
   }
@@ -181,6 +185,7 @@ export default class Shelf extends Phaser.Scene {
   
       icon.on('pointerdown', () => {
         if (!this.picked) {
+          this.sound.play('take_sound', { volume: 0.5 });
           this.picked = type;
           icon.destroy();
         }

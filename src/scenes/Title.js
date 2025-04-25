@@ -16,6 +16,8 @@ export default class Title extends Phaser.Scene {
   }
 
   create() {
+    this.title_music = this.sound.add('title_music', { loop: true, volume: 0.25 }).play();
+    
     this.add.image(0, 0, 'title').setOrigin(0);
 
     const startText = this.add.text(400, 80, 'Click anywhere to start', {
@@ -34,8 +36,10 @@ export default class Title extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => {
-      this.cameras.main.fadeOut(500, 0, 0, 0);
+      this.sound.play('click_sound', { volume: 0.5 });
+      this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.sound.stopAll();
         this.scene.start(SceneKeys.LevelSelect);
       });
     });

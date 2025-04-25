@@ -129,12 +129,14 @@ export default class Game extends Phaser.Scene {
 
     // Switch scene
     this.switch.on('down', () => {
+      this.sound.play('ui_click_sound', { volume: 0.25 });
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
       shelfScene.bookCounterText.setText(`Books balanced: ${this.books.length}/${this.total_books}`); // Update counter in shelf
       this.scene.switch(SceneKeys.Shelf);
     });
     this.shelfBtn.on('pointerdown', () => {
+      this.sound.play('ui_click_sound', { volume: 0.25 });
       const shelfScene = this.scene.get(SceneKeys.Shelf);
       shelfScene.picked = this.picked;
       shelfScene.bookCounterText.setText(`Books balanced: ${this.books.length}/${this.total_books}`); // Update counter in shelf
@@ -143,18 +145,19 @@ export default class Game extends Phaser.Scene {
 
     // Back to level select
     this.backBtn.on('pointerdown', () => {
+      this.sound.play('click_sound', { volume: 0.5 });
       this.scene.switch(SceneKeys.LevelSelect);
     });
 
     // Restart level
     this.restartBtn.on('pointerdown', () => {
+      this.sound.play('click_sound', { volume: 0.5 });
       this.scene.launch(SceneKeys.Shelf);
     });
 
     // Create book on click
     this.input.on('pointerdown', (pointer) => {
        if (!this.isPointerOnUI(pointer)) {
-        console.log(this.sensorOverlaps);
         this.handlePointerDown(pointer);
       }
     }, this);
@@ -177,17 +180,18 @@ export default class Game extends Phaser.Scene {
           if (bodyA.book_type == bodyB.book_type){
             bodyA.parent_book.adjustGlow(1);
             bodyB.parent_book.adjustGlow(1);
+            this.sound.play('doom_sound', { volume: 0.5 });
           }
 
           this.checkForExplosion(bodyA);
           this.checkForExplosion(bodyB);
-          }
+        }
       }
     });
   
     this.matter.world.on('collisionend', (event) => {
       for (const pair of event.pairs) {
-          const { bodyA, bodyB } = pair;
+        const { bodyA, bodyB } = pair;
   
         if (bodyA.isSensorBook && bodyB.isSensorBook) {
           if (bodyA.book_type === 'neutral' || bodyB.book_type === 'neutral') {
@@ -219,27 +223,34 @@ export default class Game extends Phaser.Scene {
 
     if (matching.length >= 2) {
         const group = [sensor, ...matching];
+        this.matter.world.remove(sensor);
+        this.matter.world.remove(matching);
         this.triggerExplosion(group);
     }
   }
 
   triggerExplosion(group) {
+    this.sound.stopAll();
 
-    console.log(`Explosion for ${group.length} books of type "${group[0].book_type}"`);
-    this.cameras.main.fadeOut(400, 255, 255, 255);
+    this.sound.play('dead_sound', { volume: 0.5 });
 
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.switch(SceneKeys.Lose);
+    this.input.enabled = false;
+
+    this.time.delayedCall(200, () => {
+      this.cameras.main.fadeOut(1200, 255, 255, 255);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.switch(SceneKeys.Lose);
+      });
     });
-
   }
-
 
   handlePointerDown(pointer) {
     if (this.picked == null){
       return;
     }
 
+    this.sound.play('place_sound', { volume: 0.5 });
+    
     const x = pointer.worldX;
     const y = pointer.worldY;
 
@@ -279,6 +290,7 @@ export default class Game extends Phaser.Scene {
   }
 
   resetGame(total_books){
+    this.input.enabled = true;
     this.clearAllBooks();
     this.sensorOverlaps = new Map();
     this.total_books = total_books;
