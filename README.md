@@ -22,23 +22,22 @@ Now you're hard at work, pulling books from his shelves and neatly stacking them
 
 ---
 
-## 🎮 How to Play
+## How to Play
 
 **Controls:**
 - **A / S** — Rotate the selected book
 - **D** — Switch between shelf and table scenes
 - **Mouse Wheel / Up & Down Arrows** — Scroll vertically
-
 ---
 
-## 🛠️ Built With
+## Built With
 
 - [Phaser](https://phaser.io/) — JavaScript game framework
 - [Vite](https://vitejs.dev/) — Build tool for rapid development
 
 ---
 
-## 🎨 Assets and Credits
+## Assets and Credits
 
 - **Background art** — AI-generated
 - **Other gameplay art** — Created by me
@@ -46,15 +45,15 @@ Now you're hard at work, pulling books from his shelves and neatly stacking them
 
 ---
 
-## 📦 Running Locally
+## Running Locally
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git clone git@github.com:cristinarubylee/gamedevjs-2025.git
    ```
 2. Navigate into the project folder:
    ```bash
-   cd YOUR_REPO_NAME
+   cd gamedevjs-2025
    ```
 3. Install dependencies:
    ```bash
