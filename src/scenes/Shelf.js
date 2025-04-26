@@ -44,6 +44,7 @@ export default class Shelf extends Phaser.Scene {
     const gameScene = this.scene.get(SceneKeys.Game);
     gameScene.resetGame(this.total_books);
     this.scene.switch(SceneKeys.Game);
+    gameScene.curr_level = data.id + 1;
     gameScene.cameras.main.fadeIn(500, 0, 0, 0);
   }
 

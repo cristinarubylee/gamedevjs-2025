@@ -18,6 +18,7 @@ export default class Game extends Phaser.Scene {
 
     this.picked = null;
     this.total_books = 25;
+    this.curr_level = null;
   }
 
   preload() {}
@@ -268,6 +269,8 @@ export default class Game extends Phaser.Scene {
     this.time.delayedCall(1000, () => {
       if (this.books.length >= this.total_books){
         this.cameras.main.fadeOut(500, 0, 0, 0);
+        const levelScene = this.scene.get(SceneKeys.LevelSelect);
+        levelScene.unlockedLevels = this.curr_level;
         this.cameras.main.once('camerafadeoutcomplete', () => {
           this.scene.switch(SceneKeys.Win);
         });

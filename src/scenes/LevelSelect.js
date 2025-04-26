@@ -12,6 +12,8 @@ export default class LevelSelect extends Phaser.Scene {
         { id: 4, angel: 5, demon: 5, neutral: 0},
         { id: 2, angel: 10, demon: 10, neutral: 5},
       ];
+
+      this.unlockedLevels = 1;
       
     }
   
@@ -30,11 +32,19 @@ export default class LevelSelect extends Phaser.Scene {
       }).setOrigin(0.5);
   
       this.levels.forEach((level, index) => {
+        const unlockedLevels = this.unlockedLevels;
+        const isUnlocked = index < unlockedLevels;
+
         const btn = this.add.image(50 + 155 * index, 250, `level_${index + 1}`)
         .setOrigin(0)
         .setInteractive();
 
+        if (!isUnlocked) {
+          btn.setTint(0x444444).color;
+        }
+
         btn.on('pointerover', () => {
+          if (!isUnlocked) return;
           this.tweens.add({
             targets: btn,
             scale: 1.1,
@@ -44,6 +54,7 @@ export default class LevelSelect extends Phaser.Scene {
         });
     
         btn.on('pointerout', () => {
+          if (!isUnlocked) return;
           this.tweens.add({
             targets: btn,
             scale: 1,
@@ -52,11 +63,15 @@ export default class LevelSelect extends Phaser.Scene {
           });
         });
   
-        btn.on('pointerdown', () => {this.sound.stopAll();
+        btn.on('pointerdown', () => {
+          if (!isUnlocked) return;
+          this.sound.stopAll();
           this.sound.play('click_sound', { volume: 0.75 });
           this.scene.start(SceneKeys.Shelf, level);
         });
       });
     }
+
+
   }
   
