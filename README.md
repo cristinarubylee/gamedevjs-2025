@@ -6,9 +6,9 @@ This was my submission for [Gamedev.js Jam 2025](https://itch.io/jam/gamedevjs-2
 
 ---
 
-⚠️ **Warning:** Game may contain flashing lights!
-
 ## Description
+
+⚠️ **Warning:** Game may contain flashing lights!
 
 Knott M. Hunter is definitely *not* a monster hunter who traps biblical entities in enchanted books. He is, however, desperately in need of an accountant.
 
