@@ -19,6 +19,8 @@ export default class Game extends Phaser.Scene {
     this.picked = null;
     this.total_books = 25;
     this.curr_level = null;
+
+    this.lose = false;
   }
 
   preload() {}
@@ -231,6 +233,8 @@ export default class Game extends Phaser.Scene {
   }
 
   triggerExplosion(group) {
+    this.lose = true;
+
     this.sound.stopAll();
 
     this.sound.play('dead_sound', { volume: 0.5 });
@@ -268,6 +272,9 @@ export default class Game extends Phaser.Scene {
     
     this.time.delayedCall(1000, () => {
       if (this.books.length >= this.total_books){
+        if (this.lose){
+          return;
+        }
         this.cameras.main.fadeOut(500, 0, 0, 0);
         const levelScene = this.scene.get(SceneKeys.LevelSelect);
         levelScene.unlockedLevels = this.curr_level;
@@ -298,6 +305,7 @@ export default class Game extends Phaser.Scene {
     this.sensorOverlaps = new Map();
     this.total_books = total_books;
     this.picked = null;
+    this.lose = false;
     if (this.bookCounterText){
       this.bookCounterText.setText(`Books balanced: 0/${this.total_books}`);
     }
