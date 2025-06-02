@@ -2,7 +2,7 @@
 
 ## 📚 Balance the Books!
 
-This was my submission for [Gamedev.js Jam 2025](https://itch.io/jam/gamedevjs-2025). You can play it online [here](https://cristinarubylee.itch.io/balance-the-books).
+This was my submission for [Gamedev.js Jam 2025](https://itch.io/jam/gamedevjs-2025). You can play it online [here](https://helloimruby.itch.io/balance-the-books).
 
 ---
 
